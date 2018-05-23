@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<BorderPane prefHeight="400" prefWidth="400" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+   <top>
+       <HBox>
+           <Separator/>
+           <TextField fx:id="clientNameField" text="client0"/>
+           <Separator/>
+           <TextField fx:id="addressField"/>
+           <Separator/>
+           <TextField fx:id="portField"/>
+           <Separator/>
+           <TextField fx:id="recipientField"/>
+       </HBox>
+   </top>
+
+    <bottom>
+        <HBox>
+            <Separator />
+            <TextField fx:id="messageField"/>
+            <Separator />
+            <Button fx:id="sendButton" onAction="#onSendButtonClick" text="Send" />
+            <Separator />
+        </HBox>
+    </bottom>
+
+</BorderPane>
