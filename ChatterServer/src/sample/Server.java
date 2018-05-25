@@ -29,7 +29,7 @@ public class Server implements Runnable {
             controller.addClient(client);
             pool.execute(client);
         } catch (IOException e) {
-            pool.shutdown();
+            break;
         }
         pool.shutdown();
     }

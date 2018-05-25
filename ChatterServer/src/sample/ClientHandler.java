@@ -1,9 +1,12 @@
 package sample;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Random;
 
 public class ClientHandler implements Runnable {
 
@@ -23,7 +26,9 @@ public class ClientHandler implements Runnable {
         try {
             objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectInputStream = new ObjectInputStream(socket.getInputStream());
-            this.name = (String) objectInputStream.readObject();
+            String source = objectInputStream.readObject().toString();
+            JSONObject mess = new JSONObject(source);
+            name = mess.getString("from");
             System.out.println("Connected to " + name + " successfully!");
         } catch (IOException e) {
             e.printStackTrace();
@@ -37,21 +42,19 @@ public class ClientHandler implements Runnable {
     public void run() {
         while (true) {
             try {
-                String input = (String) objectInputStream.readObject();
-                if (input.contains("/quit"))
+                JSONObject input = new JSONObject(objectInputStream.readObject().toString());
+                String message = input.getString("mess");
+                if (message.equals("/quit")) {
                     break;
-                if (input.contains(":")) {
-                    String recipient = input.substring(0, input.indexOf(":"));
-                    String message = input.substring(input.indexOf(":") + 1);
-                    ClientHandler client = controller.getClient(recipient);
-                    if (client != null) {
-                        System.out.println("Send " + recipient + " : " + message);
-                        objectOutputStream.writeObject("good");
-                    } else {
-                        objectOutputStream.writeObject("bad");
-                    }
+                }
+                String recipient = input.getString("to");
+                ClientHandler client = controller.getClient(recipient);
+                if (client != null) {
+                    client.sendMessage(message);
+                    System.out.println("Send " + recipient + " : " + message);
+                    objectOutputStream.writeObject("good");
                 } else {
-                    objectOutputStream.writeObject("no recipient");
+                    objectOutputStream.writeObject("bad");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -72,6 +75,10 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendMessage(String mess) throws IOException {
+        objectOutputStream.writeObject(mess);
     }
 
     public String getName() {

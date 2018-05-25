@@ -5,6 +5,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.net.Socket;
@@ -59,8 +60,11 @@ public class Controller implements Initializable {
                     Integer.valueOf(portField.getText()));
             objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectInputStream = new ObjectInputStream(socket.getInputStream());
-            objectOutputStream.writeObject(clientNameField.getText());
+            JSONObject mess = new JSONObject();
+            mess.put("from", clientName);
+            objectOutputStream.writeObject(mess.toString());
         } catch (IOException e) {
+            e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText("Connection Failed!");
             alert.setContentText("Socket could not be set on\nport: " + port + " "
@@ -73,12 +77,15 @@ public class Controller implements Initializable {
 
     public void sendText(String recipient, String text) {
         try {
-            String message;
-            if (recipient.equals(""))
-                message = text;
-            else
-                message = recipient + ":" + text;
-            objectOutputStream.writeObject(message);
+            JSONObject mess = new JSONObject();
+            mess.put("from", clientName);
+            mess.put("to", recipient);
+            mess.put("mess", text);
+            objectOutputStream.writeObject(mess.toString());
+            if (text.equals("/quit") && recipient.equals("server")) {
+                socket.close();
+                System.exit(0);
+            }
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText("Could not send message "
@@ -92,7 +99,9 @@ public class Controller implements Initializable {
         try {
             System.out.println("status: " + status.get(3, TimeUnit.SECONDS));
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            e.printStackTrace();
+            System.out.println("Could not read status");
+            status.cancel(true);
+            executorService.shutdown();
         }
     }
 
